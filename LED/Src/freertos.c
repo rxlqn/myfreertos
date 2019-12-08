@@ -116,7 +116,10 @@ void Func_LED0(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+
+	printf("Task0 is running\r\n");
+
+    osDelay(1000);
   }
   /* USER CODE END Func_LED0 */
 }
@@ -134,7 +137,9 @@ void Func_LED1(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+	  printf("Task1 is running\r\n");
+ 
+	  osDelay(1000);
   }
   /* USER CODE END Func_LED1 */
 }
