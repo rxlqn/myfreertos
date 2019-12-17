@@ -48,16 +48,17 @@
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
-osThreadId Task_LED0Handle;
-osThreadId TASK_LED1Handle;
+osThreadId PeriodicHandle;
+osThreadId HandleHandle;
+osSemaphoreId myBinarySem01Handle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
    
 /* USER CODE END FunctionPrototypes */
 
-void Func_LED0(void const * argument);
-void Func_LED1(void const * argument);
+void PeriodicTask(void const * argument);
+void HandleTask(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -75,6 +76,11 @@ void MX_FREERTOS_Init(void) {
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
+  /* Create the semaphores(s) */
+  /* definition and creation of myBinarySem01 */
+  osSemaphoreDef(myBinarySem01);
+  myBinarySem01Handle = osSemaphoreCreate(osSemaphore(myBinarySem01), 1);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
@@ -88,13 +94,13 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* definition and creation of Task_LED0 */
-  osThreadDef(Task_LED0, Func_LED0, osPriorityNormal, 0, 128);
-  Task_LED0Handle = osThreadCreate(osThread(Task_LED0), NULL);
+  /* definition and creation of Periodic */
+  osThreadDef(Periodic, PeriodicTask, osPriorityNormal, 0, 128);
+  PeriodicHandle = osThreadCreate(osThread(Periodic), NULL);
 
-  /* definition and creation of TASK_LED1 */
-  osThreadDef(TASK_LED1, Func_LED1, osPriorityIdle, 0, 128);
-  TASK_LED1Handle = osThreadCreate(osThread(TASK_LED1), NULL);
+  /* definition and creation of Handle */
+  osThreadDef(Handle, HandleTask, osPriorityAboveNormal, 0, 128);
+  HandleHandle = osThreadCreate(osThread(Handle), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -102,46 +108,46 @@ void MX_FREERTOS_Init(void) {
 
 }
 
-/* USER CODE BEGIN Header_Func_LED0 */
+/* USER CODE BEGIN Header_PeriodicTask */
 /**
-  * @brief  Function implementing the Task_LED0 thread.
+  * @brief  Function implementing the Periodic thread.
   * @param  argument: Not used 
   * @retval None
   */
-/* USER CODE END Header_Func_LED0 */
-void Func_LED0(void const * argument)
+/* USER CODE END Header_PeriodicTask */
+void PeriodicTask(void const * argument)
 {
 
-  /* USER CODE BEGIN Func_LED0 */
+  /* USER CODE BEGIN PeriodicTask */
   /* Infinite loop */
   for(;;)
   {
-
-	printf("Task0 is running\r\n");
-
     osDelay(1000);
+	printf("Periodic task - About to generate an interrupt.\r\n");
+	osSemaphoreRelease(myBinarySem01Handle);
+	printf("Periodic task - Interrupt generated.\r\n\r\n\r\n");
   }
-  /* USER CODE END Func_LED0 */
+  /* USER CODE END PeriodicTask */
 }
 
-/* USER CODE BEGIN Header_Func_LED1 */
+/* USER CODE BEGIN Header_HandleTask */
 /**
-* @brief Function implementing the TASK_LED1 thread.
+* @brief Function implementing the Handle thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_Func_LED1 */
-void Func_LED1(void const * argument)
+/* USER CODE END Header_HandleTask */
+void HandleTask(void const * argument)
 {
-  /* USER CODE BEGIN Func_LED1 */
+  /* USER CODE BEGIN HandleTask */
   /* Infinite loop */
   for(;;)
   {
-	  printf("Task1 is running\r\n");
- 
-	  osDelay(1000);
+    osDelay(1);
+	osSemaphoreWait(myBinarySem01Handle,osWaitForever);
+	printf("Processing event\r\n");
   }
-  /* USER CODE END Func_LED1 */
+  /* USER CODE END HandleTask */
 }
 
 /* Private application code --------------------------------------------------*/
